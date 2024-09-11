@@ -1,0 +1,12 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.28)
+PROJECT(Compsys-01 C)
+
+SET(CMAKE_C_STANDARD 99)
+
+INCLUDE_DIRECTORIES(.)
+
+ADD_EXECUTABLE(Assignment_1
+        main.c
+        cbmp.c
+        cbmp.h
+)
