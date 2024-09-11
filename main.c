@@ -1,16 +1,17 @@
-//To compile (linux/mac): gcc cbmp.c main.c -o main.out -std=c99
+//To compile (linux/mac): gcc cbmp.c main.c -o main.out -lm
 //To run (linux/mac): ./main.out example.bmp example_inv.bmp
-
-//To compile (win): gcc cbmp.c main.c -o main.exe -std=c99
+//To compile (win): gcc cbmp.c main.c -o main.exe -lm
 //To run (win): main.exe example.bmp example_inv.bmp
 
-
-
 #include "cbmp.h"
+#include <math.h>
+#include "minmax.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 //Function to convert an image to greyscale to save memory
 void greyscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
-               char temp_image[BMP_WIDTH][BMP_HEIGTH]) {
+               unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             char grey = (input_image[x][y][0] + input_image[x][y][1] + input_image[x][y][2]) / 3;
@@ -19,17 +20,11 @@ void greyscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
     }
 }
 
-void black_and_white(char inputImage[BMP_WIDTH][BMP_HEIGTH],
-                     unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]) {
+void black_and_white(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
+                     unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], int threshold) {
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
-            int grayscale = 0;
-            for (int c = 0; c < BMP_CHANNELS; c++) {
-                grayscale += inputImage[x][y];
-            }
-            grayscale /= BMP_CHANNELS;
-
-            unsigned char bw = (grayscale > 90) ? 255 : 0;
+            unsigned char bw = (inputImage[x][y] > threshold) ? 255 : 0;
             for (int c = 0; c < BMP_CHANNELS; c++) {
                 outputImage[x][y][c] = bw;
             }
@@ -85,9 +80,56 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
     }
 }
 
+int otsu_threshold(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]) {
+    int histogram[256] = {0};
+    int total_pixels = BMP_WIDTH * BMP_HEIGTH;
+
+    // Calculate histogram
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            histogram[inputImage[x][y]]++;
+        }
+    }
+
+    float sum = 0;
+    for (int i = 0; i < 256; i++) {
+        sum += i * histogram[i];
+    }
+
+    float sumB = 0;
+    int wB = 0;
+    int wF = 0;
+    float varMax = 0;
+    int threshold = 0;
+
+    for (int i = 0; i < 256; i++) {
+        wB += histogram[i];
+        if (wB == 0) {
+            continue;
+        }
+
+        wF = total_pixels - wB;
+        if (wF == 0) {
+            break;
+        }
+
+        sumB += (float) (i * histogram[i]);
+        float mB = sumB / wB;
+        float mF = (sum - sumB) / wF;
+        float varBetween = (float) wB * (float) wF * (mB - mF) * (mB - mF);
+
+        if (varBetween > varMax) {
+            varMax = varBetween;
+            threshold = i;
+        }
+    }
+
+    return threshold;
+}
+
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
-char temp_image[BMP_WIDTH][BMP_HEIGTH];
+unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 
 //Main function
@@ -99,7 +141,7 @@ int main(int argc, char **argv) {
 
     //Checking that 2 arguments are passed
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <output file path> <output file path>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input file path> <output file path>\n", argv[0]);
         exit(1);
     }
 
@@ -108,9 +150,13 @@ int main(int argc, char **argv) {
     //Load image from file
     read_bitmap(argv[1], input_image);
 
-    //Run inversion
+    //Run greyscale filter in case the image is colored
     greyscale(input_image, temp_image);
-    black_and_white(temp_image, output_image);
+
+
+    //Run gaussian filter and then making the temp_image black and white
+    gaussian_filter(temp_image, temp_image);
+    black_and_white(temp_image, output_image, otsu_threshold(temp_image));
 
     //Save image to file
     write_bitmap(output_image, argv[2]);
