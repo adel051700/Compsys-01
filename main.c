@@ -20,6 +20,17 @@ void greyscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
     }
 }
 
+void erosionToTemp(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
+                   unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH], int threshold) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            unsigned char bw = (inputImage[x][y] > threshold) ? 255 : 0;
+            outputImage[x][y] = bw;
+
+        }
+    }
+}
+
 void black_and_white(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
                      unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], int threshold) {
     for (int x = 0; x < BMP_WIDTH; x++) {
@@ -127,6 +138,39 @@ int otsu_threshold(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]) {
     return threshold;
 }
 
+
+void erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
+           unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH]) {
+    // Define the structuring element
+    int kernel[3][3] = {{0, 1, 0},
+                        {1, 1, 1},
+                        {0, 1, 0}};
+
+    // For each pixel in the image
+    for (int x = 0; x < BMP_WIDTH ; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            // If the pixel is not at the border, check the neighborhood defined by the structuring element
+            int isEroded = 0;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j <= 3; j++) {
+                    // If the pixel in the neighborhood is 0 (black) and the corresponding pixel in the structuring element is 1, set the pixel to 0
+                    if (inputImage[x + i][y + j] == 0 && kernel[i][j] == 1) {
+                        isEroded = 1;
+                    }
+                }
+            }
+            // If any pixel in the neighborhood is 0 (black), set the pixel to 0
+            if (isEroded) {
+                outputImage[x][y] = 0;
+            } else {
+                outputImage[x][y] = 255;
+            }
+
+        }
+    }
+}
+
+
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
@@ -156,6 +200,14 @@ int main(int argc, char **argv) {
 
     //Run gaussian filter and then making the temp_image black and white
     gaussian_filter(temp_image, temp_image);
+    erosionToTemp(temp_image, temp_image, otsu_threshold(temp_image));
+
+    //run erosion to test for now
+    int i = 0;
+    while (i < 5) {
+        erode(temp_image, temp_image);
+        i++;
+    }
     black_and_white(temp_image, output_image, otsu_threshold(temp_image));
 
     //Save image to file
