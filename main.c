@@ -239,9 +239,9 @@ void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
                 }
 
             }
-            y+=5;
+            y+=11;
         }
-        x+=5;
+        x+=11;
     }
 }
 
