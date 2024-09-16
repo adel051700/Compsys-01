@@ -9,6 +9,47 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//making a linked list of all detected cells
+typedef struct cell {
+    int x;
+    int y;
+    struct cell *next;
+} cell;
+
+
+//Function to print the linked list of cells
+void printCell(cell *head) {
+    cell *current = head;
+    while (current != NULL) {
+        printf("x: %i, y: %i\n", current->x, current->y);
+        current = current->next;
+    }
+}
+
+//Function to count the number of cells in the linked list
+int countCells(cell *head) {
+    cell *current = head;
+    int count = 0;
+    while (current != NULL) {
+        count++;
+        current = current->next;
+    }
+    return count;
+}
+
+//Function to check if a cell exists in the linked list
+int cellExists(cell *head, int x, int y) {
+    cell *current = head;
+    while (current != NULL) {
+        if (current->x == x && current->y == y) {
+            return 1;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+
+
 //Function to convert an image to greyscale to save memory
 void greyscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
                unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH]) {
@@ -171,10 +212,47 @@ void erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
 }
 
 
+void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            if (inputImage[x][y] == 255) {
+                for (int i = 0; i <= 11; i++) {
+                    for (int j = 0; j <= 11; j++) {
+                        if (i ==0 || i == 11 || j == 0 || j == 11) {
+                            if (inputImage[x][y] == 255) {
+                                continue; // Skip this cell if there's a white pixel in the exclusion zone
+                            }
+                        } else {
+                            if (!cellExists(*head, x, y)) {
+                                cell *new_cell = (cell *) malloc(sizeof(cell));
+                                if (new_cell == NULL) {
+                                    fprintf(stderr, "Failed to allocate memory for new cell.\n");
+                                    exit(1);
+                                }
+                                new_cell->x = x;
+                                new_cell->y = y;
+                                new_cell->next = *head;
+                                *head = new_cell;
+                            }
+                        }
+                    }
+                }
+
+            }
+            y+=5;
+        }
+        x+=5;
+    }
+}
+
+
+
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
+
+cell *head = NULL;
 
 //Main function
 int main(int argc, char **argv) {
@@ -208,7 +286,11 @@ int main(int argc, char **argv) {
         erode(temp_image, temp_image);
         i++;
     }
+
+    detectCell(temp_image, &head);
     black_and_white(temp_image, output_image, otsu_threshold(temp_image));
+    printCell(head);
+    printf("Number of cells: %i\n", countCells(head));
 
     //Save image to file
     write_bitmap(output_image, argv[2]);
