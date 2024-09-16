@@ -5,7 +5,7 @@
 
 #include "cbmp.h"
 #include <math.h>
-#include "minmax.h"
+#include <minmax.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -61,28 +61,15 @@ void greyscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
     }
 }
 
-void erosionToTemp(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
-                   unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH], int threshold) {
+void black_white(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], int threshold) {
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             unsigned char bw = (inputImage[x][y] > threshold) ? 255 : 0;
-            outputImage[x][y] = bw;
-
+            inputImage[x][y] = bw;
         }
     }
 }
 
-void black_and_white(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
-                     unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], int threshold) {
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
-            unsigned char bw = (inputImage[x][y] > threshold) ? 255 : 0;
-            for (int c = 0; c < BMP_CHANNELS; c++) {
-                outputImage[x][y][c] = bw;
-            }
-        }
-    }
-}
 
 //creating the gaussian kernel
 void create_gaussian_kernel(double kernel[][5], int kernel_size, double sigma) {
@@ -188,7 +175,7 @@ void erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
                         {0, 1, 0}};
 
     // For each pixel in the image
-    for (int x = 0; x < BMP_WIDTH ; x++) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             // If the pixel is not at the border, check the neighborhood defined by the structuring element
             int isEroded = 0;
@@ -218,10 +205,8 @@ void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
             if (inputImage[x][y] == 255) {
                 for (int i = 0; i <= 11; i++) {
                     for (int j = 0; j <= 11; j++) {
-                        if (i ==0 || i == 11 || j == 0 || j == 11) {
-                            if (inputImage[x][y] == 255) {
-                                continue; // Skip this cell if there's a white pixel in the exclusion zone
-                            }
+                        if (i == 0 || i == 11 || j == 0 || j == 11) {
+                            continue;
                         } else {
                             if (!cellExists(*head, x, y)) {
                                 cell *new_cell = (cell *) malloc(sizeof(cell));
@@ -239,19 +224,34 @@ void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
                 }
 
             }
-            y+=11;
         }
-        x+=11;
     }
 }
 
-
+void drawDot(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], cell *head) {
+    cell *current = head;
+    while (current != NULL) {
+        for (int x = 0; x < 11; x++) {
+            for (int y = 0; y < 11; y++) {
+                if(head->x + x >= BMP_WIDTH || head->y + y >= BMP_HEIGTH){
+                    continue;
+                }
+                inputImage[current->x + x][current->y + y][0] = 88;
+                inputImage[current->x + x][current->y + y][1] = 4;
+                inputImage[current->x + x][current->y + y][2] = 108;
+            }
+        }
+        current = current->next;
+    }
+}
 
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 
+
+//Creating a linked list of cells
 cell *head = NULL;
 
 //Main function
@@ -271,26 +271,34 @@ int main(int argc, char **argv) {
 
     //Load image from file
     read_bitmap(argv[1], input_image);
+    read_bitmap(argv[1], output_image);
+
+
 
     //Run greyscale filter in case the image is colored
     greyscale(input_image, temp_image);
 
+    //make a pointer to the temp image to reduce memory usage
+
+
 
     //Run gaussian filter and then making the temp_image black and white
     gaussian_filter(temp_image, temp_image);
-    erosionToTemp(temp_image, temp_image, otsu_threshold(temp_image));
+    black_white(temp_image, otsu_threshold(temp_image));
 
     //run erosion to test for now
     int i = 0;
-    while (i < 5) {
+    while (i < 6) {
         erode(temp_image, temp_image);
         i++;
     }
 
     detectCell(temp_image, &head);
-    black_and_white(temp_image, output_image, otsu_threshold(temp_image));
     printCell(head);
     printf("Number of cells: %i\n", countCells(head));
+
+    drawDot(output_image, head);
+
 
     //Save image to file
     write_bitmap(output_image, argv[2]);
