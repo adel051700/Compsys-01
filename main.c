@@ -137,7 +137,7 @@ int otsu_threshold(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]) {
 
     float sumB = 0;
     int wB = 0;
-    int wF = 0;
+    int wF;
     float varMax = 0;
     int threshold = 0;
 
@@ -167,23 +167,24 @@ int otsu_threshold(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]) {
 }
 
 
-void erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
-           unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH]) {
+int erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
+           unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH], int eroded) {
+    eroded=0;
     // Define the structuring element
     int kernel[3][3] = {{0, 1, 0},
                         {1, 1, 1},
                         {0, 1, 0}};
-
     // For each pixel in the image
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             // If the pixel is not at the border, check the neighborhood defined by the structuring element
             int isEroded = 0;
             for (int i = 0; i < 3; i++) {
-                for (int j = 0; j <= 3; j++) {
+                for (int j = 0; j < 3; j++) {
                     // If the pixel in the neighborhood is 0 (black) and the corresponding pixel in the structuring element is 1, set the pixel to 0
                     if (inputImage[x + i][y + j] == 0 && kernel[i][j] == 1) {
                         isEroded = 1;
+                        eroded=1;
                     }
                 }
             }
@@ -196,6 +197,7 @@ void erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
 
         }
     }
+    return eroded;
 }
 
 
@@ -278,23 +280,21 @@ int main(int argc, char **argv) {
     //Run greyscale filter in case the image is colored
     greyscale(input_image, temp_image);
 
-    //make a pointer to the temp image to reduce memory usage
-
-
 
     //Run gaussian filter and then making the temp_image black and white
     gaussian_filter(temp_image, temp_image);
     black_white(temp_image, otsu_threshold(temp_image));
 
     //run erosion to test for now
-    int i = 0;
-    while (i < 6) {
-        erode(temp_image, temp_image);
-        i++;
+    int i=1;
+    int *eroded = &i;
+    while (*eroded) {
+        erode(temp_image, temp_image,*eroded);
+        detectCell(temp_image, &head);
+        printCell(head);
     }
 
-    detectCell(temp_image, &head);
-    printCell(head);
+
     printf("Number of cells: %i\n", countCells(head));
 
     drawDot(output_image, head);
