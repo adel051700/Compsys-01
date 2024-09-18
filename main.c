@@ -5,7 +5,7 @@
 
 #include "cbmp.h"
 #include <math.h>
-#include <minmax.h>
+#include "minmax.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -202,29 +202,57 @@ int erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
 
 
 void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
-            if (inputImage[x][y] == 255) {
-                for (int i = 0; i <= 11; i++) {
-                    for (int j = 0; j <= 11; j++) {
-                        if (i == 0 || i == 11 || j == 0 || j == 11) {
-                            continue;
-                        } else {
-                            if (!cellExists(*head, x, y)) {
-                                cell *new_cell = (cell *) malloc(sizeof(cell));
-                                if (new_cell == NULL) {
-                                    fprintf(stderr, "Failed to allocate memory for new cell.\n");
-                                    exit(1);
-                                }
-                                new_cell->x = x;
-                                new_cell->y = y;
-                                new_cell->next = *head;
-                                *head = new_cell;
-                            }
+    for (int x = 1; x < BMP_WIDTH; x++) {
+        for (int y = 1; y < BMP_HEIGTH ; y++) { 
+            int WhitePixelfound = 0;
+            int ExclusionFrameBlack = 1; 
+
+            // Check the exclusion frame and see if they all are black.
+            for (int i = -1; i <= 12; i++) { 
+                for (int j = -1; j <= 12; j++) {
+                    if (i == -1 || i == 12 || j == -1 || j == 12) { 
+                        if (inputImage[x + i][y + j] != 0) { 
+                            ExclusionFrameBlack = 0;
+                            break;
                         }
                     }
                 }
+                if (!ExclusionFrameBlack) {
+                    break;
+                }
+            }
 
+            // If the exclusion frame is black, check the capturing area
+            if (ExclusionFrameBlack) {
+                for (int i = 0; i < 12; i++) {
+                    for (int j = 0; j < 12; j++) {
+                        if (inputImage[x + i][y + j] == 255) { 
+                            WhitePixelfound = 1;
+                        }
+                    }
+                }
+            }
+
+            // If at least one white pixel is found inside and the exclusion frame is black, register a cell
+            if (WhitePixelfound && ExclusionFrameBlack) {
+                if (!cellExists(*head, x, y)) {
+                    cell *new_cell = (cell *) malloc(sizeof(cell));
+                    if (new_cell == NULL) {
+                        fprintf(stderr, "Failed to allocate memory for new cell.\n");
+                        exit(1);
+                    }
+                    new_cell->x = x;
+                    new_cell->y = y;
+                    new_cell->next = *head;
+                    *head = new_cell;
+                }
+
+                // Set the entire capturing area to black to avoid detecting the same cell again
+                for (int i = 0; i < 12; i++) {
+                    for (int j = 0; j < 12; j++) {
+                        inputImage[x + i][y + j] = 0; 
+                    }
+                }
             }
         }
     }
