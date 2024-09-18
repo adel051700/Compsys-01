@@ -8,7 +8,7 @@
 #include "minmax.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include "time.h"
 
 //making a linked list of all detected cells
 typedef struct cell {
