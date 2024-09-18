@@ -8,6 +8,7 @@
 #include "minmax.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 //making a linked list of all detected cells
 typedef struct cell {
@@ -168,8 +169,8 @@ int otsu_threshold(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]) {
 
 
 int erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
-           unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH], int eroded) {
-    eroded=0;
+           unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH]) {
+    int eroded = 1;
     // Define the structuring element
     int kernel[3][3] = {{0, 1, 0},
                         {1, 1, 1},
@@ -179,38 +180,39 @@ int erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
         for (int y = 0; y < BMP_HEIGTH; y++) {
             // If the pixel is not at the border, check the neighborhood defined by the structuring element
             int isEroded = 0;
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    // If the pixel in the neighborhood is 0 (black) and the corresponding pixel in the structuring element is 1, set the pixel to 0
-                    if (inputImage[x + i][y + j] == 0 && kernel[i][j] == 1) {
-                        isEroded = 1;
-                        eroded=1;
+            if (inputImage[x][y] == 255) {
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        // If the pixel in the neighborhood is 0 (black) and the corresponding pixel in the structuring element is 1, set the pixel to 0
+                        if (inputImage[x + i][y + j] == 0 && kernel[i][j] == 1) {
+                            isEroded = 1;
+                        }
                     }
                 }
+                // If any pixel in the neighborhood is 0 (black), set the pixel to 0
+                if (isEroded) {
+                    outputImage[x][y] = 0;
+                } else {
+                    outputImage[x][y] = 255;
+                    eroded = 0;
+                }
             }
-            // If any pixel in the neighborhood is 0 (black), set the pixel to 0
-            if (isEroded) {
-                outputImage[x][y] = 0;
-            } else {
-                outputImage[x][y] = 255;
-            }
-
         }
     }
     return eroded;
 }
 
-
 void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
-    for (int x = 1; x < BMP_WIDTH; x++) {
-        for (int y = 1; y < BMP_HEIGTH ; y++) { 
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH ; y++) {
             int WhitePixelfound = 0;
-            int ExclusionFrameBlack = 1; 
+            int ExclusionFrameBlack = 1;
+            if(y==0){}
 
             // Check the exclusion frame and see if they all are black.
-            for (int i = -1; i <= 12; i++) { 
-                for (int j = -1; j <= 12; j++) {
-                    if (i == -1 || i == 12 || j == -1 || j == 12) { 
+            for (int i = -5; i <= 6; i++) {
+                for (int j = -5; j <= 6; j++) {
+                    if (i == -5 || i == 6 || j == -5 || j == 6) {
                         if (inputImage[x + i][y + j] != 0) { 
                             ExclusionFrameBlack = 0;
                             break;
@@ -224,8 +226,8 @@ void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
 
             // If the exclusion frame is black, check the capturing area
             if (ExclusionFrameBlack) {
-                for (int i = 0; i < 12; i++) {
-                    for (int j = 0; j < 12; j++) {
+                for (int i = -4; i < 6; i++) {
+                    for (int j = -4; j < 6; j++) {
                         if (inputImage[x + i][y + j] == 255) { 
                             WhitePixelfound = 1;
                         }
@@ -248,8 +250,8 @@ void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
                 }
 
                 // Set the entire capturing area to black to avoid detecting the same cell again
-                for (int i = 0; i < 12; i++) {
-                    for (int j = 0; j < 12; j++) {
+                for (int i = -4; i < 6; i++) {
+                    for (int j = -4; j < 6; j++) {
                         inputImage[x + i][y + j] = 0; 
                     }
                 }
@@ -290,6 +292,7 @@ int main(int argc, char **argv) {
     //argv[0] is a string with the name of the program
     //argv[1] is the first command line argument (input image)
     //argv[2] is the second command line argument (output image)
+    clock_t begin = clock();
 
     //Checking that 2 arguments are passed
     if (argc != 3) {
@@ -314,15 +317,11 @@ int main(int argc, char **argv) {
     black_white(temp_image, otsu_threshold(temp_image));
 
     //run erosion to test for now
-    int i=1;
-    int *eroded = &i;
-    while (*eroded) {
-        erode(temp_image, temp_image,*eroded);
+    while (erode(temp_image, temp_image)==0) {
         detectCell(temp_image, &head);
-        printCell(head);
     }
 
-
+    printCell(head);
     printf("Number of cells: %i\n", countCells(head));
 
     drawDot(output_image, head);
@@ -332,5 +331,8 @@ int main(int argc, char **argv) {
     write_bitmap(output_image, argv[2]);
 
     printf("Done!\n");
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("Time spent: %f seconds", time_spent);
     return 0;
 }
