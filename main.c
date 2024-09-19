@@ -97,7 +97,7 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
     // Define the size of the Gaussian kernel, typically 5x5 or 3x3
     int kernel_size = 5;
     // Define the standard deviation for the Gaussian distribution, typically 1.0
-    double sigma = 10;
+    double sigma = 50;
     // Create the Gaussian kernel
     double kernel[kernel_size][kernel_size];
     create_gaussian_kernel(kernel, kernel_size, sigma);
