@@ -53,18 +53,18 @@ int cellExists(cell *head, int x, int y) {
 
 //Function to convert an image to greyscale to save memory
 void greyscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
-               unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH]) {
+               unsigned char temp_image[BMP_WIDTH+2][BMP_HEIGTH+2]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
-            char grey = (input_image[x][y][0] + input_image[x][y][1] + input_image[x][y][2]) / 3;
-            temp_image[x][y] = grey;
+            int grey = (input_image[x][y][0] + input_image[x][y][1] + input_image[x][y][2]) / 3;
+            temp_image[x+2][y+2] = grey;
         }
     }
 }
 
-void black_white(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], int threshold) {
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
+void black_white(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], int threshold) {
+    for (int x = 2; x < BMP_WIDTH; x++) {
+        for (int y = 2; y < BMP_HEIGTH; y++) {
             unsigned char bw = (inputImage[x][y] > threshold) ? 255 : 0;
             inputImage[x][y] = bw;
         }
@@ -92,25 +92,25 @@ void create_gaussian_kernel(double kernel[][5], int kernel_size, double sigma) {
     }
 }
 
-void gaussian_filter(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
-                     unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH]) {
+void gaussian_filter(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
+                     unsigned char outputImage[BMP_WIDTH+2][BMP_HEIGTH+2]) {
     // Define the size of the Gaussian kernel, typically 5x5 or 3x3
     int kernel_size = 5;
     // Define the standard deviation for the Gaussian distribution, typically 1.0
-    double sigma = 5;
+    double sigma = 10;
     // Create the Gaussian kernel
     double kernel[kernel_size][kernel_size];
     create_gaussian_kernel(kernel, kernel_size, sigma);
     // For each pixel in the input image:
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
+    for (int x = 2; x <= BMP_WIDTH+1; x++) {
+        for (int y = 2; y <= BMP_HEIGTH+1; y++) {
             // Multiply the surrounding pixels by the corresponding values in the Gaussian kernel
             // Sum up these values
             double sum = 0.0;
             for (int i = -kernel_size / 2; i <= kernel_size / 2; i++) {
                 for (int j = -kernel_size / 2; j <= kernel_size / 2; j++) {
-                    int x_loc = min(max(x + i, 0), BMP_WIDTH - 1);
-                    int y_loc = min(max(y + j, 0), BMP_HEIGTH - 1);
+                    int x_loc = min(max(x + i, 0), BMP_WIDTH + 1);
+                    int y_loc = min(max(y + j, 0), BMP_HEIGTH + 1);
                     sum += inputImage[x_loc][y_loc] * kernel[i + kernel_size / 2][j + kernel_size / 2];
                 }
             }
@@ -120,13 +120,13 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
     }
 }
 
-int otsu_threshold(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]) {
+int otsu_threshold(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2]) {
     int histogram[256] = {0};
-    int total_pixels = BMP_WIDTH * BMP_HEIGTH;
+    int total_pixels = (BMP_WIDTH+2) * (BMP_HEIGTH+2);
 
     // Calculate histogram
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
+    for (int x = 0; x < BMP_WIDTH+2; x++) {
+        for (int y = 0; y < BMP_HEIGTH+2; y++) {
             histogram[inputImage[x][y]]++;
         }
     }
@@ -168,16 +168,16 @@ int otsu_threshold(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]) {
 }
 
 
-int erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
-           unsigned char outputImage[BMP_WIDTH][BMP_HEIGTH]) {
+int erode(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
+           unsigned char outputImage[BMP_WIDTH+2][BMP_HEIGTH+2]) {
     int eroded = 1;
     // Define the structuring element
     int kernel[3][3] = {{0, 1, 0},
                         {1, 1, 1},
                         {0, 1, 0}};
     // For each pixel in the image
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
+    for (int x = 2; x <= BMP_WIDTH+1; x++) {
+        for (int y = 2; y <= BMP_HEIGTH+1; y++) {
             // If the pixel is not at the border, check the neighborhood defined by the structuring element
             int isEroded = 0;
             if (inputImage[x][y] == 255) {
@@ -202,9 +202,9 @@ int erode(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
     return eroded;
 }
 
-void detectCell(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH], cell **head) {
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH ; y++) {
+void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head) {
+    for (int x = 0; x < BMP_WIDTH+2; x++) {
+        for (int y = 0; y < BMP_HEIGTH+2 ; y++) {
             int WhitePixelfound = 0;
             int ExclusionFrameBlack = 1;
             if(y==0){}
@@ -277,10 +277,10 @@ void drawDot(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], cell
     }
 }
 
-void blackBorder(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]){
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
-            if(x==0 || x==BMP_WIDTH-1 || y==0 || y==BMP_HEIGTH-1){
+void blackBorder(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2]){
+    for (int x = 0; x < BMP_WIDTH+2; x++) {
+        for (int y = 0; y < BMP_HEIGTH+2; y++) {
+            if(x==0 || x==BMP_WIDTH+1 || y==0 || y==BMP_HEIGTH+1){
                 inputImage[x][y] = 0;
             }
         }
@@ -289,7 +289,7 @@ void blackBorder(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]){
 
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
-unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
+unsigned char temp_image[BMP_WIDTH+2][BMP_HEIGTH+2];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 
 
@@ -315,6 +315,7 @@ int main(int argc, char **argv) {
     //Load image from file
     read_bitmap(argv[1], input_image);
     read_bitmap(argv[1], output_image);
+
 
 
 
