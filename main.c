@@ -97,7 +97,7 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH],
     // Define the size of the Gaussian kernel, typically 5x5 or 3x3
     int kernel_size = 5;
     // Define the standard deviation for the Gaussian distribution, typically 1.0
-    double sigma = 1.0;
+    double sigma = 5;
     // Create the Gaussian kernel
     double kernel[kernel_size][kernel_size];
     create_gaussian_kernel(kernel, kernel_size, sigma);
@@ -277,6 +277,16 @@ void drawDot(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], cell
     }
 }
 
+void blackBorder(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH]){
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            if(x==0 || x==BMP_WIDTH-1 || y==0 || y==BMP_HEIGTH-1){
+                inputImage[x][y] = 0;
+            }
+        }
+    }
+}
+
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
@@ -315,6 +325,7 @@ int main(int argc, char **argv) {
     //Run gaussian filter and then making the temp_image black and white
     gaussian_filter(temp_image, temp_image);
     black_white(temp_image, otsu_threshold(temp_image));
+    blackBorder(temp_image);
 
     //run erosion to test for now
     while (erode(temp_image, temp_image)==0) {
