@@ -97,7 +97,7 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
     // Define the size of the Gaussian kernel, typically 5x5 or 3x3
     int kernel_size = 5;
     // Define the standard deviation for the Gaussian distribution, typically 1.0
-    double sigma = 50;
+    double sigma = 1.05;
     // Create the Gaussian kernel
     double kernel[kernel_size][kernel_size];
     create_gaussian_kernel(kernel, kernel_size, sigma);
@@ -210,9 +210,9 @@ void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head
             if(y==0){}
 
             // Check the exclusion frame and see if they all are black.
-            for (int i = -5; i <= 6; i++) {
-                for (int j = -5; j <= 6; j++) {
-                    if (i == -5 || i == 6 || j == -5 || j == 6) {
+            for (int i = -5; i <= 5; i++) {
+                for (int j = -5; j <= 5; j++) {
+                    if (i == -5 || i == 5 || j == -5 || j == 5) {
                         if (inputImage[x + i][y + j] != 0) { 
                             ExclusionFrameBlack = 0;
                             break;
@@ -226,8 +226,8 @@ void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head
 
             // If the exclusion frame is black, check the capturing area
             if (ExclusionFrameBlack) {
-                for (int i = -4; i < 6; i++) {
-                    for (int j = -4; j < 6; j++) {
+                for (int i = -4; i < 5; i++) {
+                    for (int j = -4; j < 5; j++) {
                         if (inputImage[x + i][y + j] == 255) { 
                             WhitePixelfound = 1;
                         }
@@ -250,8 +250,8 @@ void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head
                 }
 
                 // Set the entire capturing area to black to avoid detecting the same cell again
-                for (int i = -4; i < 6; i++) {
-                    for (int j = -4; j < 6; j++) {
+                for (int i = -4; i < 5; i++) {
+                    for (int j = -4; j < 5; j++) {
                         inputImage[x + i][y + j] = 0; 
                     }
                 }
