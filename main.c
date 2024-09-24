@@ -10,7 +10,12 @@
 #include <stdio.h>
 #include "time.h"
 
-//making a linked list of all detected cells
+/**
+ * \struct cell
+ * \brief Linked list structure to store detected cells.
+ *
+ * This structure represents a cell with its coordinates and a pointer to the next cell.
+ */
 typedef struct cell {
     int x;
     int y;
@@ -18,7 +23,11 @@ typedef struct cell {
 } cell;
 
 
-//Function to print the linked list of cells
+/**
+ * \brief Prints the linked list of cells.
+ *
+ * \param head Pointer to the head of the linked list.
+ */
 void printCell(cell *head) {
     cell *current = head;
     while (current != NULL) {
@@ -38,7 +47,14 @@ int countCells(cell *head) {
     return count;
 }
 
-//Function to check if a cell exists in the linked list
+/**
+ * \brief Checks if a cell exists in the linked list.
+ *
+ * \param head Pointer to the head of the linked list.
+ * \param x X-coordinate of the cell to check.
+ * \param y Y-coordinate of the cell to check.
+ * \return 1 if the cell exists, 0 otherwise.
+ */
 int cellExists(cell *head, int x, int y) {
     cell *current = head;
     while (current != NULL) {
@@ -51,18 +67,31 @@ int cellExists(cell *head, int x, int y) {
 }
 
 
-//Function to convert an image to greyscale to save memory
+
+/**
+ * \brief Converts an image to greyscale.
+ *
+ * \param input_image The input image array.
+ * \param temp_image The temporary image array to store the greyscale image.
+ */
 void greyscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
-               unsigned char temp_image[BMP_WIDTH+2][BMP_HEIGTH+2]) {
+               unsigned char temp_image[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             int grey = (input_image[x][y][0] + input_image[x][y][1] + input_image[x][y][2]) / 3;
-            temp_image[x+2][y+2] = grey;
+            temp_image[x + 2][y + 2] = grey;
         }
     }
 }
 
-void black_white(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], int threshold) {
+
+/**
+ * \brief Converts an image to black and white based on a threshold.
+ *
+ * \param inputImage The input image array.
+ * \param threshold The threshold value for conversion.
+ */
+void black_white(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2], int threshold) {
     for (int x = 2; x < BMP_WIDTH; x++) {
         for (int y = 2; y < BMP_HEIGTH; y++) {
             unsigned char bw = (inputImage[x][y] > threshold) ? 255 : 0;
@@ -72,7 +101,13 @@ void black_white(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], int thresh
 }
 
 
-//creating the gaussian kernel
+/**
+ * \brief Creates a Gaussian kernel.
+ *
+ * \param kernel The kernel array to store the Gaussian values.
+ * \param kernel_size The size of the kernel.
+ * \param sigma The standard deviation for the Gaussian distribution.
+ */
 void create_gaussian_kernel(double kernel[][5], int kernel_size, double sigma) {
     double sum = 0.0;
     int half_size = kernel_size / 2;
@@ -92,18 +127,25 @@ void create_gaussian_kernel(double kernel[][5], int kernel_size, double sigma) {
     }
 }
 
-void gaussian_filter(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
-                     unsigned char outputImage[BMP_WIDTH+2][BMP_HEIGTH+2]) {
-    // Define the size of the Gaussian kernel, typically 5x5 or 3x3
+
+/**
+ * \brief Applies a Gaussian filter to an image.
+ *
+ * \param inputImage The input image array.
+ * \param outputImage The output image array to store the filtered image.
+ */
+void gaussian_filter(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2],
+                     unsigned char outputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
+    // Define the size of the Gaussian kernel
     int kernel_size = 5;
-    // Define the standard deviation for the Gaussian distribution, typically 1.0
+    // Define the standard deviation for the Gaussian distribution
     double sigma = 1.05;
     // Create the Gaussian kernel
     double kernel[kernel_size][kernel_size];
     create_gaussian_kernel(kernel, kernel_size, sigma);
     // For each pixel in the input image:
-    for (int x = 2; x <= BMP_WIDTH+1; x++) {
-        for (int y = 2; y <= BMP_HEIGTH+1; y++) {
+    for (int x = 2; x <= BMP_WIDTH + 1; x++) {
+        for (int y = 2; y <= BMP_HEIGTH + 1; y++) {
             // Multiply the surrounding pixels by the corresponding values in the Gaussian kernel
             // Sum up these values
             double sum = 0.0;
@@ -120,13 +162,20 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
     }
 }
 
-int otsu_threshold(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2]) {
+
+/**
+ * \brief Calculates the Otsu threshold for an image.
+ *
+ * \param inputImage The input image array.
+ * \return The calculated threshold value.
+ */
+int otsu_threshold(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
     int histogram[256] = {0};
-    int total_pixels = (BMP_WIDTH+2) * (BMP_HEIGTH+2);
+    int total_pixels = (BMP_WIDTH + 2) * (BMP_HEIGTH + 2);
 
     // Calculate histogram
-    for (int x = 0; x < BMP_WIDTH+2; x++) {
-        for (int y = 0; y < BMP_HEIGTH+2; y++) {
+    for (int x = 0; x < BMP_WIDTH + 2; x++) {
+        for (int y = 0; y < BMP_HEIGTH + 2; y++) {
             histogram[inputImage[x][y]]++;
         }
     }
@@ -167,17 +216,23 @@ int otsu_threshold(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2]) {
     return threshold;
 }
 
-
-int erode(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
-           unsigned char outputImage[BMP_WIDTH+2][BMP_HEIGTH+2]) {
+/**
+ * \brief Applies erosion to an image.
+ *
+ * \param inputImage The input image array.
+ * \param outputImage The output image array to store the eroded image.
+ * \return 1 if the image is fully eroded, 0 otherwise.
+ */
+int erode(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2],
+          unsigned char outputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
     int eroded = 1;
     // Define the structuring element
     int kernel[3][3] = {{0, 1, 0},
                         {1, 1, 1},
                         {0, 1, 0}};
     // For each pixel in the image
-    for (int x = 2; x <= BMP_WIDTH+1; x++) {
-        for (int y = 2; y <= BMP_HEIGTH+1; y++) {
+    for (int x = 2; x <= BMP_WIDTH + 1; x++) {
+        for (int y = 2; y <= BMP_HEIGTH + 1; y++) {
             // If the pixel is not at the border, check the neighborhood defined by the structuring element
             int isEroded = 0;
             if (inputImage[x][y] == 255) {
@@ -202,18 +257,24 @@ int erode(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2],
     return eroded;
 }
 
-void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head) {
-    for (int x = 0; x < BMP_WIDTH+2; x++) {
-        for (int y = 0; y < BMP_HEIGTH+2 ; y++) {
+/**
+ * \brief Detects cells in an image and adds them to a linked list.
+ *
+ * \param inputImage The input image array.
+ * \param head Pointer to the head of the linked list.
+ */
+void detectCell(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2], cell **head) {
+    for (int x = 0; x < BMP_WIDTH + 2; x++) {
+        for (int y = 0; y < BMP_HEIGTH + 2; y++) {
             int WhitePixelfound = 0;
             int ExclusionFrameBlack = 1;
-            if(y==0){}
+            if (y == 0) {}
 
             // Check the exclusion frame and see if they all are black.
             for (int i = -4; i <= 4; i++) {
                 for (int j = -4; j <= 4; j++) {
                     if (i == -4 || i == 4 || j == -4 || j == 4) {
-                        if (inputImage[x + i][y + j] != 0) { 
+                        if (inputImage[x + i][y + j] != 0) {
                             ExclusionFrameBlack = 0;
                             break;
                         }
@@ -228,7 +289,7 @@ void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head
             if (ExclusionFrameBlack) {
                 for (int i = -3; i < 4; i++) {
                     for (int j = -3; j < 4; j++) {
-                        if (inputImage[x + i][y + j] == 255) { 
+                        if (inputImage[x + i][y + j] == 255) {
                             WhitePixelfound = 1;
                         }
                     }
@@ -252,7 +313,7 @@ void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head
                 // Set the entire capturing area to black to avoid detecting the same cell again
                 for (int i = -3; i < 4; i++) {
                     for (int j = -3; j < 4; j++) {
-                        inputImage[x + i][y + j] = 0; 
+                        inputImage[x + i][y + j] = 0;
                     }
                 }
             }
@@ -260,12 +321,19 @@ void detectCell(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2], cell **head
     }
 }
 
+
+/**
+ * \brief Draws a dot on the image at the location of each detected cell.
+ *
+ * \param inputImage The input image array.
+ * \param head Pointer to the head of the linked list of cells.
+ */
 void drawDot(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], cell *head) {
     cell *current = head;
     while (current != NULL) {
         for (int x = 0; x < 11; x++) {
             for (int y = 0; y < 11; y++) {
-                if(head->x + x >= BMP_WIDTH || head->y + y >= BMP_HEIGTH){
+                if (head->x + x >= BMP_WIDTH || head->y + y >= BMP_HEIGTH) {
                     continue;
                 }
                 inputImage[current->x + x][current->y + y][0] = 88;
@@ -277,10 +345,15 @@ void drawDot(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], cell
     }
 }
 
-void blackBorder(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2]){
-    for (int x = 0; x < BMP_WIDTH+2; x++) {
-        for (int y = 0; y < BMP_HEIGTH+2; y++) {
-            if(x==0 || x==BMP_WIDTH+1 || y==0 || y==BMP_HEIGTH+1){
+/**
+ * \brief Adds a black border to the image.
+ *
+ * \param inputImage The input image array.
+ */
+void blackBorder(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
+    for (int x = 0; x < BMP_WIDTH + 2; x++) {
+        for (int y = 0; y < BMP_HEIGTH + 2; y++) {
+            if (x == 0 || x == BMP_WIDTH + 1 || y == 0 || y == BMP_HEIGTH + 1) {
                 inputImage[x][y] = 0;
             }
         }
@@ -289,14 +362,21 @@ void blackBorder(unsigned char inputImage[BMP_WIDTH+2][BMP_HEIGTH+2]){
 
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
-unsigned char temp_image[BMP_WIDTH+2][BMP_HEIGTH+2];
+unsigned char temp_image[BMP_WIDTH + 2][BMP_HEIGTH + 2];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 
 
 //Creating a linked list of cells
 cell *head = NULL;
 
-//Main function
+
+/**
+ * \brief Main function for the image processing program.
+ *
+ * \param argc The number of command line arguments.
+ * \param argv The array of command line arguments.
+ * \return 0 on success, 1 on failure.
+ */
 int main(int argc, char **argv) {
     //argc counts how may arguments are passed
     //argv[0] is a string with the name of the program
@@ -328,8 +408,8 @@ int main(int argc, char **argv) {
     black_white(temp_image, otsu_threshold(temp_image));
     blackBorder(temp_image);
 
-    //run erosion to test for now
-    while (erode(temp_image, temp_image)==0) {
+    //Run erosion to remove noise
+    while (erode(temp_image, temp_image) == 0) {
         detectCell(temp_image, &head);
     }
 
@@ -344,7 +424,7 @@ int main(int argc, char **argv) {
 
     printf("Done!\n");
     clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    double time_spent = (double) (end - begin) / CLOCKS_PER_SEC;
     printf("Time spent: %f seconds", time_spent);
     return 0;
 }
