@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 /**
  * \brief Prints the linked list of cells.
  *
@@ -46,7 +47,6 @@ int cellExists(cell *head, int x, int y) {
     }
     return 0;
 }
-
 
 
 /**
@@ -120,7 +120,7 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2],
     // Define the size of the Gaussian kernel
     int kernel_size = 5;
     // Define the standard deviation for the Gaussian distribution
-    double sigma = 1.05;
+    double sigma = 1.65;
     // Create the Gaussian kernel
     double kernel[kernel_size][kernel_size];
     create_gaussian_kernel(kernel, kernel_size, sigma);
@@ -155,8 +155,8 @@ int otsu_threshold(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
     int total_pixels = (BMP_WIDTH + 2) * (BMP_HEIGTH + 2);
 
     // Calculate histogram
-    for (int x = 0; x < BMP_WIDTH + 2; x++) {
-        for (int y = 0; y < BMP_HEIGTH + 2; y++) {
+    for (int x = 2; x < BMP_WIDTH; x++) {
+        for (int y = 2; y < BMP_HEIGTH; y++) {
             histogram[inputImage[x][y]]++;
         }
     }
@@ -210,7 +210,7 @@ int erode(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2],
     // Define the structuring element
     int kernel[3][3] = {{0, 1, 0},
                         {1, 1, 1},
-                        {0, 1, 0}};
+                        {1, 1, 0}};
     // For each pixel in the image
     for (int x = 2; x <= BMP_WIDTH + 1; x++) {
         for (int y = 2; y <= BMP_HEIGTH + 1; y++) {
@@ -312,14 +312,82 @@ void detectCell(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2], cell **
 void drawDot(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], cell *head) {
     cell *current = head;
     while (current != NULL) {
-        for (int x = 0; x < 11; x++) {
-            for (int y = 0; y < 11; y++) {
-                if (head->x + x >= BMP_WIDTH || head->y + y >= BMP_HEIGTH) {
+        // Draw a simple representation of the DTU logo
+        for (int x = 0; x < 12; x++) {
+            for (int y = 0; y < 14; y++) {
+                if (current->x + x >= BMP_WIDTH || current->y + y >= BMP_HEIGTH) {
                     continue;
                 }
-                inputImage[current->x + x][current->y + y][0] = 88;
-                inputImage[current->x + x][current->y + y][1] = 4;
-                inputImage[current->x + x][current->y + y][2] = 108;
+                // Example pattern for DTU logo
+
+                inputImage[current->x + x][current->y + y][0] = 189; // Red
+                inputImage[current->x + x][current->y + y][1] = 42;  // Green
+                inputImage[current->x + x][current->y + y][2] = 48;  // Blue
+                if (x==1 && y>0 && y<4) {
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(y==1&&(x==1||x==2)){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(y==3&&x==2){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(y==2&&x==3){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(x>=4&&x<=6&&y==1){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(x==5&&y>1&&y<4){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(x==8&&y>0&&y<4){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(x==9&&y==3){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(x==10&&y>0&&y<4) {
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(y==7&&(x>0&&x<11)){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if((y==6||y==8)&&(x==2||x==3||x==8||x==9)){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if(y==11&&(x>0&&x<11)){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
+                if((y==10||y==12)&&(x==2||x==3||x==8||x==9)){
+                    inputImage[current->x + x][current->y + y][0] = 255; // White
+                    inputImage[current->x + x][current->y + y][1] = 255; // White
+                    inputImage[current->x + x][current->y + y][2] = 255; // White
+                }
             }
         }
         current = current->next;
@@ -341,19 +409,3 @@ void blackBorder(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
     }
 }
 
-//Declaring the array to store the image (unsigned char = unsigned 8 bit)
-unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
-unsigned char temp_image[BMP_WIDTH + 2][BMP_HEIGTH + 2];
-unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
-
-
-
-
-
-/**
- * \brief Main function for the image processing program.
- *
- * \param argc The number of command line arguments.
- * \param argv The array of command line arguments.
- * \return 0 on success, 1 on failure.
- */

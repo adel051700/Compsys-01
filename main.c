@@ -4,8 +4,6 @@
 //To run (win): main.exe example.bmp example_inv.bmp
 
 #include "cbmp.h"
-#include <math.h>
-#include "minmax.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "time.h"
@@ -16,7 +14,13 @@ unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char temp_image[BMP_WIDTH+2][BMP_HEIGTH+2];
 
-
+/**
+ * \brief Main function for the image processing program.
+ *
+ * \param argc The number of command line arguments.
+ * \param argv The array of command line arguments.
+ * \return 0 on success, 1 on failure.
+ */
 int main(int argc, char **argv) {
     //argc counts how may arguments are passed
     //argv[0] is a string with the name of the program
