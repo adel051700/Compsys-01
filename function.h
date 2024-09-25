@@ -4,7 +4,7 @@
 #define BMP_WIDTH 950
 #define BMP_HEIGTH 950
 #define BMP_CHANNELS 3
-extern cell *head;
+
 
 
 typedef struct cell {

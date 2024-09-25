@@ -346,7 +346,6 @@ unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char temp_image[BMP_WIDTH + 2][BMP_HEIGTH + 2];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 
-cell *head = NULL; 
 
 
 
