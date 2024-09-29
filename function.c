@@ -152,7 +152,7 @@ void gaussian_filter(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2],
  */
 int otsu_threshold(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
     int histogram[256] = {0};
-    int total_pixels = (BMP_WIDTH + 2) * (BMP_HEIGTH + 2);
+    int total_pixels = (BMP_WIDTH) * (BMP_HEIGTH);
 
     // Calculate histogram
     for (int x = 2; x < BMP_WIDTH; x++) {
@@ -212,8 +212,8 @@ int erode(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2],
                         {1, 1, 1},
                         {1, 1, 0}};
     // For each pixel in the image
-    for (int x = 2; x <= BMP_WIDTH + 1; x++) {
-        for (int y = 2; y <= BMP_HEIGTH + 1; y++) {
+    for (int x = 2; x < BMP_WIDTH; x++) {
+        for (int y = 2; y < BMP_HEIGTH; y++) {
             // If the pixel is not at the border, check the neighborhood defined by the structuring element
             int isEroded = 0;
             if (inputImage[x][y] == 255) {
@@ -402,7 +402,7 @@ void drawDot(unsigned char inputImage[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS], cell
 void blackBorder(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
     for (int x = 0; x < BMP_WIDTH + 2; x++) {
         for (int y = 0; y < BMP_HEIGTH + 2; y++) {
-            if (x == 0 || x == BMP_WIDTH + 1 || y == 0 || y == BMP_HEIGTH + 1) {
+            if (x == 0 || x >= BMP_WIDTH || y == 0 || y >= BMP_HEIGTH) {
                 inputImage[x][y] = 0;
             }
         }
