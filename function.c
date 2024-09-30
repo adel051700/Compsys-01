@@ -1,4 +1,3 @@
-#include "cbmp.h"
 #include "function.h"
 #include "minmax.h"
 #include <math.h>
@@ -405,6 +404,16 @@ void blackBorder(unsigned char inputImage[BMP_WIDTH + 2][BMP_HEIGTH + 2]) {
             if (x == 0 || x >= BMP_WIDTH || y == 0 || y >= BMP_HEIGTH) {
                 inputImage[x][y] = 0;
             }
+        }
+    }
+}
+
+void tempImageToPrint(unsigned char temp_image[BMP_WIDTH + 2][BMP_HEIGTH + 2], unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]){
+    for (int x = 2; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            output_image[x][y][0] = temp_image[x + 2][y + 2];
+            output_image[x][y][1] = temp_image[x + 2][y + 2];
+            output_image[x][y][2] = temp_image[x + 2][y + 2];
         }
     }
 }
