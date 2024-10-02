@@ -50,6 +50,7 @@ void test_cellExists(void) {
     CU_ASSERT_FALSE(cellExists(NULL, 1, 1)); // test if the function correctly handles the case where the linked list is null
 }
 
+
 // Test case for greyscale
 void test_greyscale(void) {
  unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
@@ -85,7 +86,37 @@ unsigned char temp_image[BMP_WIDTH+2][BMP_HEIGTH+2];
 
 }
 
+// Test case for detectCell
+void test_detectCell(void) {
+    // Create a test binary image (255 for cell, 0 for background)
+   unsigned char test_image[BMP_WIDTH + 2][BMP_HEIGTH + 2] = {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 255, 255, 0, 0, 0, 0, 0, 0, 0},
+        {0, 255, 255, 0, 255, 255, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 255, 255, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    };
+    cell *head = NULL; 
+    detectCell(test_image, &head); 
 
+   CU_ASSERT_TRUE(cellExists(head, 2, 1)); 
+    CU_ASSERT_TRUE(cellExists(head, 2, 2)); 
+    CU_ASSERT_TRUE(cellExists(head, 4, 3)); 
+    CU_ASSERT_FALSE(cellExists(head, 1, 0)); 
+    CU_ASSERT_FALSE(cellExists(head, 0, 0)); 
+    CU_ASSERT_FALSE(cellExists(head, 5, 5)); 
+
+    while (head) {
+        cell *temp = head;
+        head = head->next; 
+        free(temp); 
+    }
+}
 
 
 int main() {
@@ -102,7 +133,8 @@ int main() {
 
     if ((NULL == CU_add_test(pSuite, "test of countCells()", test_countCells)) ||
         (NULL == CU_add_test(pSuite, "test of cellExists()", test_cellExists)) ||
-        (NULL == CU_add_test(pSuite, "test of greyscale()", test_greyscale))) {
+        (NULL == CU_add_test(pSuite, "test of greyscale()", test_greyscale))||
+        (NULL == CU_add_test(pSuite, "test of detectCell()", test_detectCell))) {
         CU_cleanup_registry();
         return CU_get_error();
     }
