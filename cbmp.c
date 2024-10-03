@@ -158,9 +158,12 @@ BMP* bopen(char* file_path)
 	//printf("bmp->height %d\n", bmp->height);
 	//printf("bmp->depth %d\n", bmp->depth);
 
-    if(!_validate_depth(bmp->depth))
-    {
-        _throw_error("Invalid file depth");
+    while (!_validate_depth(bmp->depth)) {
+        //_throw_error("Invalid file depth");
+        // fprintf(stderr, "Error: Invalid file depth \n");
+        free(bmp->file_byte_contents);
+        free(bmp);
+        bopen(file_path);
     }
 
     _populate_pixel_array(bmp);

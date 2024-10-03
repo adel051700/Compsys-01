@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     black_white(temp_image, otsu_threshold(temp_image));
     blackBorder(temp_image);
     int i=0;
-    char name[20];
+    char name[1];
     //Run erosion to remove noise
     while (erode(temp_image, temp_image) == 0) {
         detectCell(temp_image, &head);
