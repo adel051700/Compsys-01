@@ -52,15 +52,22 @@ int main(int argc, char **argv) {
     gaussian_filter(temp_image, temp_image);
     black_white(temp_image, otsu_threshold(temp_image));
     blackBorder(temp_image);
+
+    /** Variables used for printing the eroded images
     int i=0;
     char name[1];
+     **/
+
     //Run erosion to remove noise
     while (erode(temp_image, temp_image) == 0) {
         detectCell(temp_image, &head);
+
+        /** Printing every eroded image if needed
         tempImageToPrint(temp_image, temp_image2);
         sprintf(name, "output%d.bmp", i);
         write_bitmap(temp_image2, name);
         i++;
+         **/
     }
 
     printCell(head);

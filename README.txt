@@ -1,18 +1,13 @@
-This folder contains code and material for the Assignment 1.
-
-To help you get started, we provide you with the library 'cbmp.h' + 'cbmp.c' to load and save images to bmp files. The description of the functions offered by this library is provided in the assignment document (in the Algorithm Step 1 and Step 7 descriptions).
-
-In addition, we also provide an example code (main.c) that loads an image from a file (example.bmp), inverts the value of the color channels (i.e. creates the negative of the image), and saves it to a file. As a starting point, make sure you can run this code without error. Examine the code, and use it as starting point for implementing the algorithm.
-
-If you use the terminal, compile and run 'main.c' as follows: 
+If you use the terminal, compile and run 'main.c' as follows:
 
 Linux/Mac:
-- To compile: gcc cbmp.c main.c -o main.out -lm
-- To run: ./main.out example.bmp example_inv.bmp
+- To compile (linux/mac): gcc cbmp.c function.c main.c -o main.out -lm
+- To run (linux/mac): ./main.out example.bmp example_inv.bmp
 
 Windows:
-- To compile: gcc cbmp.c main.c -o main.exe -lm
-- To run: main.exe example.bmp example_inv.bmp
+- To compile (win): gcc cbmp.c function.c main.c -o main.exe -lm
+- To run (win): main.exe example.bmp example_inv.bmp
+
 
 The folder 'results_example' provides you with some example images obtained by running the algorithm. 
 
