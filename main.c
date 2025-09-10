@@ -23,10 +23,6 @@ unsigned char temp_image2[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
  * \return 0 on success, 1 on failure.
  */
 int main(int argc, char **argv) {
-    //argc counts how may arguments are passed
-    //argv[0] is a string with the name of the program
-    //argv[1] is the first command line argument (input image)
-    //argv[2] is the second command line argument (output image)
     clock_t begin = clock();
 
     //Checking that 2 arguments are passed
